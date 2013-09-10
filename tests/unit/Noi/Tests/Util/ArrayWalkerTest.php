@@ -268,4 +268,91 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         // Assert
         $this->assertEquals($expected, $result);
     }
+
+    /**
+     * @test
+     * ja: イテレータが有効なエントリを指しているとき、
+     *     apply()は、与えられたコールバックをその要素に適用する。
+     */
+    public function apply_InvokesProvidedCallbackWithCurrentElement()
+    {
+        // Setup
+        $testEntry = 'test';
+        $this->walker = $this->createArrayWalker(array($testEntry));
+
+        // Expect
+        $this->mockCallback->expects($this->once())
+                ->method('__invoke')->with($testEntry);
+
+        // Act
+        $this->walker->apply($this->mockCallback);
+    }
+
+    /**
+     * @test
+     * ja: イテレータが無効なエントリを指しているとき、
+     *     apply()は、コールバックを実行しない。
+     */
+    public function apply_DoesNotInvokeProvidedCallback_InvalidElement()
+    {
+        // Setup
+        $this->walker = $this->createArrayWalker(array());
+
+        // Expect
+        $this->mockCallback->expects($this->never())
+                ->method('__invoke');
+
+        // Act
+        $this->walker->apply($this->mockCallback);
+
+        // Assert
+        $this->assertFalse($this->walker->valid());
+    }
+
+    /**
+     * @test
+     * ja: apply()に渡したコールバックは、最初の引数が現在の要素。
+     */
+    public function providedCallback_ForApplyMethod_FirstArgumentIsCurrentElement()
+    {
+        // Setup
+        $testArray = array('first' => 123, 'second' => 456);
+        $this->walker = $this->createArrayWalker($testArray);
+
+        // Expect
+        $this->mockCallback->expects($this->exactly(2))
+                ->method('__invoke');
+
+        $this->mockCallback->expects($this->at(0))
+                ->method('__invoke')->with(123, 'first');
+
+        $this->mockCallback->expects($this->at(1))
+                ->method('__invoke')->with(456, 'second');
+
+        // Act
+        $this->walker->apply($this->mockCallback);
+        $this->walker->next();
+        $this->walker->apply($this->mockCallback);
+    }
+
+    /**
+     * @test
+     * ja: apply()に渡したコールバックは、現在の要素に変更を加えることができる。
+     */
+    public function providedCallback_ForApplyMethod_CanModifyCurrentElement()
+    {
+        // Setup
+        $origArray = array(' A ', ' B ', ' C ');
+        $expected = array('a', ' B ', ' C ');
+        $this->walker = $this->createArrayWalker($origArray);
+
+        // Act
+        $this->walker->apply(function (&$value) {
+            $value = strtolower(trim($value));
+        });
+
+        // Assert
+        $this->assertEquals($expected, $this->walker->getArrayCopy());
+        $this->assertNotEquals($expected, $origArray);
+    }
 }
