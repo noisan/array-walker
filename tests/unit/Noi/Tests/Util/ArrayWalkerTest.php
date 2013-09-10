@@ -193,4 +193,25 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         // Act
         $this->walker->walk($mockCallback);
     }
+
+    /**
+     * @test
+     * ja: each()は、walk()のエイリアス。
+     */
+    public function each_CallsWalk()
+    {
+        // Setup
+        $mockWalker = $this->getMockBuilder(get_class($this->createArrayWalker(array('unused'))))
+                ->setMethods(array('walk'))
+                ->disableOriginalConstructor()->getMock();
+
+        $mockCallback = $this->createMockCallback();
+
+        // Expect
+        $mockWalker->expects($this->once())
+                ->method('walk')->with($mockCallback);
+
+        // Act
+        $mockWalker->each($mockCallback);
+    }
 }
