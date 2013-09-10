@@ -1,6 +1,6 @@
 {
     "name": "noi/array-walker",
-    "description": "ArrayWalker",
+    "description": "ArrayWalker, OOP wrapper for array_walk() and array_map()",
     "license": "MIT",
     "type": "library",
     "keywords": ["array", "iterator", "walker"],
