@@ -7,10 +7,12 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
 {
     private $walker;
     private $mockObject;
+    private $mockCallback;
 
     public function setUp()
     {
         $this->mockObject = $this->createMockObjectElement(array('foo', 'trim'));
+        $this->mockCallback = $this->createMockCallback();
     }
 
     protected function createArrayWalker($traversable)
@@ -117,14 +119,13 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         // Setup
         $emptyArray = array();
         $this->walker = $this->createArrayWalker($emptyArray);
-        $mockCallback = $this->createMockCallback();
 
         // Expect
-        $mockCallback->expects($this->never())
+        $this->mockCallback->expects($this->never())
                 ->method('__invoke');
 
         // Act
-        $this->walker->walk($mockCallback);
+        $this->walker->walk($this->mockCallback);
     }
 
     /**
@@ -136,14 +137,13 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         // Setup
         $testArray = array($this->mockObject, 'abc', 123);
         $this->walker = $this->createArrayWalker($testArray);
-        $mockCallback = $this->createMockCallback();
 
         // Expect
-        $mockCallback->expects($this->exactly(3))
+        $this->mockCallback->expects($this->exactly(3))
                 ->method('__invoke');
 
         // Act
-        $this->walker->walk($mockCallback);
+        $this->walker->walk($this->mockCallback);
     }
 
     /**
@@ -178,20 +178,19 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         // Setup
         $testArray = array('first' => 1, 'second' => 2);
         $this->walker = $this->createArrayWalker($testArray);
-        $mockCallback = $this->createMockCallback();
 
         // Expect
-        $mockCallback->expects($this->exactly(2))
+        $this->mockCallback->expects($this->exactly(2))
                 ->method('__invoke');
 
-        $mockCallback->expects($this->at(0))
+        $this->mockCallback->expects($this->at(0))
                 ->method('__invoke')->with($this->anything(), 'first');
 
-        $mockCallback->expects($this->at(1))
+        $this->mockCallback->expects($this->at(1))
                 ->method('__invoke')->with($this->anything(), 'second');
 
         // Act
-        $this->walker->walk($mockCallback);
+        $this->walker->walk($this->mockCallback);
     }
 
     /**
@@ -205,13 +204,11 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
                 ->setMethods(array('walk'))
                 ->disableOriginalConstructor()->getMock();
 
-        $mockCallback = $this->createMockCallback();
-
         // Expect
         $mockWalker->expects($this->once())
-                ->method('walk')->with($mockCallback);
+                ->method('walk')->with($this->mockCallback);
 
         // Act
-        $mockWalker->each($mockCallback);
+        $mockWalker->each($this->mockCallback);
     }
 }
