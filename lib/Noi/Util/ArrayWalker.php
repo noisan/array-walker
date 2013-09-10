@@ -24,4 +24,9 @@ class ArrayWalker extends ArrayIterator
             }
         }, $this->getArrayCopy());
     }
+
+    public function walk($callback)
+    {
+        return array_walk($this, $callback);
+    }
 }

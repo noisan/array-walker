@@ -23,6 +23,11 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         return $this->getMock('stdClass', $methods);
     }
 
+    protected function createMockCallback()
+    {
+        return $this->getMock('stdClass', array('__invoke'));
+    }
+
     /**
      * @test
      * ja: 空の配列に対して、__call()の実行は、空のリストを返す。
@@ -101,5 +106,91 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
 
         // Assert
         $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * @test
+     * ja: 空の配列の場合、walk()は、コールバックを呼ばず何もしない。
+     */
+    public function applyCallbackToEachElement_DoesNotRunCallback_forEmptyArray()
+    {
+        // Setup
+        $emptyArray = array();
+        $this->walker = $this->createArrayWalker($emptyArray);
+        $mockCallback = $this->createMockCallback();
+
+        // Expect
+        $mockCallback->expects($this->never())
+                ->method('__invoke');
+
+        // Act
+        $this->walker->walk($mockCallback);
+    }
+
+    /**
+     * @test
+     * ja: 要素を持つなら、walk()は、各要素に対して与えられたコールバックを呼ぶ。
+     */
+    public function applyCallbackToEachElement_InvokesProvidedCallbackForEachElement()
+    {
+        // Setup
+        $testArray = array($this->mockObject, 'abc', 123);
+        $this->walker = $this->createArrayWalker($testArray);
+        $mockCallback = $this->createMockCallback();
+
+        // Expect
+        $mockCallback->expects($this->exactly(3))
+                ->method('__invoke');
+
+        // Act
+        $this->walker->walk($mockCallback);
+    }
+
+    /**
+     * @test
+     * ja: walk()に渡したコールバックは、保持している各要素の値に変更を加えることができる。
+     * (array_walk()と同じ)
+     */
+    public function providedCallback_CanChangeOriginalValue()
+    {
+        // Setup
+        $origArray = array(1, 2, 3, 4, 5);
+        $expected = array(10, 20, 30, 40, 50);
+        $this->walker = $this->createArrayWalker($origArray);
+
+        // Act
+        $this->walker->walk(function (&$value) {
+            $value *= 10;
+        });
+
+        // Assert
+        $this->assertEquals($expected, $this->walker->getArrayCopy());
+        $this->assertNotEquals($expected, $origArray);
+    }
+
+    /**
+     * @test
+     * ja: walk()に渡したコールバックは、引数の2番目に配列のキーが渡される。
+     * (array_walk()と同じ)
+     */
+    public function providedCallback_SecondArgumentIsKey()
+    {
+        // Setup
+        $testArray = array('first' => 1, 'second' => 2);
+        $this->walker = $this->createArrayWalker($testArray);
+        $mockCallback = $this->createMockCallback();
+
+        // Expect
+        $mockCallback->expects($this->exactly(2))
+                ->method('__invoke');
+
+        $mockCallback->expects($this->at(0))
+                ->method('__invoke')->with($this->anything(), 'first');
+
+        $mockCallback->expects($this->at(1))
+                ->method('__invoke')->with($this->anything(), 'second');
+
+        // Act
+        $this->walker->walk($mockCallback);
     }
 }
