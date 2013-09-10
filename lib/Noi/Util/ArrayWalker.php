@@ -39,4 +39,13 @@ class ArrayWalker extends ArrayIterator
     {
         return array_map($callback, $this->getArrayCopy());
     }
+
+    public function apply($callback)
+    {
+        if (!$this->valid()) {
+            return;
+        }
+        $key = $this->key();
+        return call_user_func_array($callback, array(&$this[$key], $key));
+    }
 }
