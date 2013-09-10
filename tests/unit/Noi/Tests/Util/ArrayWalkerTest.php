@@ -5,6 +5,7 @@ use Noi\Util\ArrayWalker;
 
 class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
 {
+    private $unused = null;
     private $walker;
     private $mockObject;
     private $mockCallback;
@@ -210,5 +211,61 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
 
         // Act
         $mockWalker->each($this->mockCallback);
+    }
+
+    /**
+     * @test
+     * ja: 保持している配列が空の場合、map()は、空の配列を返す。
+     */
+    public function map_ReturnsEmptyArray_forEmptyArray()
+    {
+        // Setup
+        $emptyArray = array();
+        $this->walker = $this->createArrayWalker($emptyArray);
+
+        // Act
+        $result = $this->walker->map($this->unused);
+
+        // Assert
+        $this->assertEmpty($result);
+        $this->assertInternalType('array', $result);
+    }
+
+    /**
+     * @test
+     * ja: 保持している配列が空の場合、map()は、空の配列を返す。
+     */
+    public function map_DoesNotInvokeProvidedCallback_forEmptyArray()
+    {
+        // Setup
+        $emptyArray = array();
+        $this->walker = $this->createArrayWalker($emptyArray);
+
+        // Expect
+        $this->mockCallback->expects($this->never())
+                ->method('__invoke');
+
+        // Act
+        $this->walker->map($this->mockCallback);
+    }
+
+    /**
+     * @test
+     * ja: 要素を持つなら、map()は、与えられたコールバックを各要素に適用した結果の配列を返す。
+     */
+    public function map_ReturnsArrayOfReturnedValues()
+    {
+        // Setup
+        $testArray = array('*A*', '*B*', '*C*');
+        $expected = array('A', 'B', 'C');
+        $this->walker = $this->createArrayWalker($testArray);
+
+        // Act
+        $result = $this->walker->map(function ($value) {
+            return trim($value, '*');
+        });
+
+        // Assert
+        $this->assertEquals($expected, $result);
     }
 }

@@ -34,4 +34,9 @@ class ArrayWalker extends ArrayIterator
     {
         return $this->walk($callback);
     }
+
+    public function map($callback)
+    {
+        return array_map($callback, $this->getArrayCopy());
+    }
 }
