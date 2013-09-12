@@ -355,4 +355,77 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $this->walker->getArrayCopy());
         $this->assertNotEquals($expected, $origArray);
     }
+
+    /**
+     * @test
+     * ja: 非オブジェクトの要素に対して__call()で「関数」を呼ぶ時、
+     *     デフォルトでは、各要素を関数の最初の引数とする。
+     *
+     * ※つまり、str_replace()等では意図しない動作をする。
+     */
+    public function argumentPosition_EachElementIsPassedAsFirstArgument_Default()
+    {
+        // Setup
+        $testArray = array('*_scalar_*');
+        $expected = array('_scalar_');
+        $this->walker = $this->createArrayWalker($testArray);
+
+        // Act
+        // same effect as:
+        // $this->walker[$this->key()] = trim($this->walker->current(), '*');
+        $result = $this->walker->trim('*');
+
+        // Assert
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * @test
+     * ja: 非オブジェクトの要素に対して__call()で「関数」を呼ぶ時、
+     *     引数位置を指定すると、各要素は関数の指定位置の引数になる。
+     */
+    public function argumentPosition_EachElementIsPassedAsSpecifiedOffsetArgument_OffsetSpecified()
+    {
+        // Setup
+        $testArray = array('_scalar_');
+        $expected1 = array('*scalar*');
+        $expected2 = array('*scalar_');
+        $this->walker = $this->createArrayWalker($testArray);
+
+        // Act
+
+        // same effect as:
+        // $this->walker[$this->key()] = str_replace('_', '*', $this->walker->current());
+        $result1 = $this->walker->str_replace[2]('_', '*');
+
+        // same effect as:
+        // $this->walker[$this->key()] = preg_replace('/_/', '*', $this->walker->current(), 1);
+        $result2 = $this->walker->preg_replace[2]('/_/', '*', 1);
+
+        // Assert
+        $this->assertEquals($expected1, $result1);
+        $this->assertEquals($expected2, $result2);
+    }
+
+    /**
+     * @test
+     * ja: 非オブジェクトの要素に対して__call()で「関数」を呼ぶ時、
+     *     引数位置を指定すると、指定位置までの引数はnullで埋められる。
+     */
+    public function argumentPosition_ArgumentIsPaddedWithNulls_OffsetSpecified()
+    {
+        // Setup
+        $testFormat = '%d, %d, %d';
+        $testArray = array('123');
+        $expected = array('0, 0, 123');
+        $this->walker = $this->createArrayWalker($testArray);
+
+        // Act
+        // same effect as:
+        // $this->walker[$this->key()] = sprintf($testFormat, null, null, $this->walker->current());
+        $result = $this->walker->sprintf[3]($testFormat);
+
+        // Assert
+        $this->assertEquals($expected, $result);
+    }
 }

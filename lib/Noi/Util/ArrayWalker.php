@@ -48,4 +48,9 @@ class ArrayWalker extends ArrayIterator
         $key = $this->key();
         return call_user_func_array($callback, array(&$this[$key], $key));
     }
+
+    public function __get($name)
+    {
+        return new ArrayWalkerCallback($this, $name);
+    }
 }
