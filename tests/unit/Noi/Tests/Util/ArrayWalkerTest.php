@@ -178,7 +178,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         });
 
         // Assert
-        $this->assertEquals($expected, $this->walker->getArrayCopy());
+        $this->assertArrayWalkerEquals($expected, $this->walker);
         $this->assertNotEquals($expected, $origArray);
     }
 
@@ -382,7 +382,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         });
 
         // Assert
-        $this->assertEquals($expected, $this->walker->getArrayCopy());
+        $this->assertArrayWalkerEquals($expected, $this->walker);
         $this->assertNotEquals($expected, $origArray);
     }
 
