@@ -115,7 +115,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
      * @test
      * ja: 空の配列の場合、walk()は、コールバックを呼ばず何もしない。
      */
-    public function applyCallbackToEachElement_DoesNotRunCallback_forEmptyArray()
+    public function walk_DoesNotInvokeCallback_ForEmptyArray()
     {
         // Setup
         $emptyArray = array();
@@ -133,7 +133,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
      * @test
      * ja: 要素を持つなら、walk()は、各要素に対して与えられたコールバックを呼ぶ。
      */
-    public function applyCallbackToEachElement_InvokesProvidedCallbackForEachElement()
+    public function walk_InvokesProvidedCallbackForEachElement()
     {
         // Setup
         $testArray = array($this->mockObject, 'abc', 123);
