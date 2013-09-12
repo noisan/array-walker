@@ -209,7 +209,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * ja: each()は、walk()のエイリアス。
+     * ja: each()は、walk()メソッドを呼ぶ。
      */
     public function each_CallsWalk()
     {
@@ -224,6 +224,23 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
 
         // Act
         $mockWalker->each($this->mockCallback);
+    }
+
+    /**
+     * @test
+     * ja: each()は、自分自身を返す。
+     */
+    public function each_ReturnsSelf()
+    {
+        // Setup
+        $this->walker = $this->createArrayWalker(array());
+        $this->unused = function () {};
+
+        // Act
+        $result = $this->walker->each($this->unused);
+
+        // Assert
+        $this->assertSame($this->walker, $result);
     }
 
     /**

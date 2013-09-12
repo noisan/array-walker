@@ -34,7 +34,8 @@ class ArrayWalker extends ArrayIterator
 
     public function each($callback)
     {
-        return $this->walk($callback);
+        $this->walk($callback);
+        return $this;
     }
 
     public function map($callback)
