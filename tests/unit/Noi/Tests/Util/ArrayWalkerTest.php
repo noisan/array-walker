@@ -31,6 +31,19 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         return $this->getMock('stdClass', array('__invoke'));
     }
 
+    protected function assertArrayWalkerEmpty($walker)
+    {
+        $this->assertInstanceOf('Noi\Util\ArrayWalker', $walker);
+        $this->assertEmpty($walker->getArrayCopy());
+        $this->assertInternalType('array', $walker->getArrayCopy());
+    }
+
+    protected function assertArrayWalkerEquals($expected, $walker)
+    {
+        $this->assertInstanceOf('Noi\Util\ArrayWalker', $walker);
+        $this->assertEquals($expected, $walker->getArrayCopy());
+    }
+
     /**
      * @test
      * ja: 空の配列に対して、__call()の実行は、空のリストを返す。
@@ -44,7 +57,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         $this->walker = $this->createArrayWalker($emptyArray);
 
         // Assert
-        $this->assertEmpty($this->walker->ignoredMethod());
+        $this->assertArrayWalkerEmpty($this->walker->ignoredMethod());
     }
 
     /**
@@ -85,7 +98,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         $result = $this->walker->trim('*');
 
         // Assert
-        $this->assertEquals($expected, $result);
+        $this->assertArrayWalkerEquals($expected, $result);
     }
 
     /**
@@ -108,7 +121,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         $result = $this->walker->trim('_');
 
         // Assert
-        $this->assertEquals($expected, $result);
+        $this->assertArrayWalkerEquals($expected, $result);
     }
 
     /**
@@ -165,7 +178,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         });
 
         // Assert
-        $this->assertEquals($expected, $this->walker->getArrayCopy());
+        $this->assertArrayWalkerEquals($expected, $this->walker);
         $this->assertNotEquals($expected, $origArray);
     }
 
@@ -196,7 +209,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * ja: each()は、walk()のエイリアス。
+     * ja: each()は、walk()メソッドを呼ぶ。
      */
     public function each_CallsWalk()
     {
@@ -215,7 +228,24 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * ja: 保持している配列が空の場合、map()は、空の配列を返す。
+     * ja: each()は、自分自身を返す。
+     */
+    public function each_ReturnsSelf()
+    {
+        // Setup
+        $this->walker = $this->createArrayWalker(array());
+        $this->unused = function () {};
+
+        // Act
+        $result = $this->walker->each($this->unused);
+
+        // Assert
+        $this->assertSame($this->walker, $result);
+    }
+
+    /**
+     * @test
+     * ja: 保持している配列が空の場合、map()は、空のArrayWalkerを返す。
      */
     public function map_ReturnsEmptyArray_forEmptyArray()
     {
@@ -227,13 +257,12 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         $result = $this->walker->map($this->unused);
 
         // Assert
-        $this->assertEmpty($result);
-        $this->assertInternalType('array', $result);
+        $this->assertArrayWalkerEmpty($result);
     }
 
     /**
      * @test
-     * ja: 保持している配列が空の場合、map()は、空の配列を返す。
+     * ja: 保持している配列が空の場合、map()は、コールバックを呼ばない。
      */
     public function map_DoesNotInvokeProvidedCallback_forEmptyArray()
     {
@@ -251,9 +280,10 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * ja: 要素を持つなら、map()は、与えられたコールバックを各要素に適用した結果の配列を返す。
+     * ja: 要素を持つなら、map()は、与えられたコールバックを各要素に適用して
+     *     結果の配列を新しいArrayWalkerとして返す。
      */
-    public function map_ReturnsArrayOfReturnedValues()
+    public function map_ReturnsArrayWalkerOfReturnedValues()
     {
         // Setup
         $testArray = array('*A*', '*B*', '*C*');
@@ -266,7 +296,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         });
 
         // Assert
-        $this->assertEquals($expected, $result);
+        $this->assertArrayWalkerEquals($expected, $result);
     }
 
     /**
@@ -352,7 +382,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         });
 
         // Assert
-        $this->assertEquals($expected, $this->walker->getArrayCopy());
+        $this->assertArrayWalkerEquals($expected, $this->walker);
         $this->assertNotEquals($expected, $origArray);
     }
 
@@ -376,7 +406,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         $result = $this->walker->trim('*');
 
         // Assert
-        $this->assertEquals($expected, $result);
+        $this->assertArrayWalkerEquals($expected, $result);
     }
 
     /**
@@ -403,8 +433,8 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         $result2 = $this->walker->preg_replace[2]('/_/', '*', 1);
 
         // Assert
-        $this->assertEquals($expected1, $result1);
-        $this->assertEquals($expected2, $result2);
+        $this->assertArrayWalkerEquals($expected1, $result1);
+        $this->assertArrayWalkerEquals($expected2, $result2);
     }
 
     /**
@@ -426,7 +456,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         $result = $this->walker->sprintf[3]($testFormat);
 
         // Assert
-        $this->assertEquals($expected, $result);
+        $this->assertArrayWalkerEquals($expected, $result);
     }
 
     /**
@@ -445,7 +475,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         $this->walker->array_push('TEST');
 
         // Assert
-        $this->assertEquals($expected, $this->walker->getArrayCopy());
+        $this->assertArrayWalkerEquals($expected, $this->walker);
     }
 
     /**
@@ -469,6 +499,81 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         $this->walker->mb_convert_variables[2]('UTF8', 'SJIS-win');
 
         // Assert
-        $this->assertEquals($expectedUTF8, $this->walker->getArrayCopy());
+        $this->assertArrayWalkerEquals($expectedUTF8, $this->walker);
+    }
+
+    /**
+     * @test
+     * ja: __call()は、Fluent Interfaceでアクセス可能。
+     */
+    public function fluentInterface_Call()
+    {
+        // Setup
+        $testArray = array(' *a* ', ' *b* ', ' *c* ');
+        $expected = array('A', 'B', 'C');
+        $this->walker = $this->createArrayWalker($testArray);
+
+        // Act
+        $result = $this->walker
+                ->trim()
+                ->trim('*')
+                ->strtoupper();
+
+        // Assert
+        $this->assertArrayWalkerEquals($expected, $result);
+    }
+
+    /**
+     * @test
+     * ja: map()は、Fluent Interfaceでアクセス可能。
+     */
+    public function fluentInterface_Map()
+    {
+        // Setup
+        $testArray = array(' *a* ', ' *b* ', ' *c* ');
+        $expected = array('A', 'B', 'C');
+        $this->walker = $this->createArrayWalker($testArray);
+
+        // Act
+        $result = $this->walker
+                ->map('trim')
+                ->map(function ($entry) {
+                    return trim($entry, '*');
+                })
+                ->map(function ($entry) {
+                    return strtoupper($entry);
+                });
+
+        // Assert
+        $this->assertArrayWalkerEquals($expected, $result);
+    }
+
+    /**
+     * @test
+     * ja: each()は、Fluent Interfaceでアクセス可能。
+     */
+    public function fluentInterface_Each()
+    {
+        // Setup
+        $testArray = array(' *a* ', ' *b* ', ' *c* ');
+        $expected = array('A', 'B', 'C');
+        $this->walker = $this->createArrayWalker($testArray);
+
+        // Act
+        $result = $this->walker
+                ->each(function (&$entry) {
+                    $entry = trim($entry);
+                })
+                ->each(function (&$entry) {
+                    $entry = trim($entry, '*');
+                })
+                ->each(function (&$entry) {
+                    $entry = strtoupper($entry);
+                });
+
+        // Assert
+        $this->assertArrayWalkerEquals($expected, $result);
+        $this->assertArrayWalkerEquals($expected, $this->walker);
+        $this->assertSame($this->walker, $result);
     }
 }

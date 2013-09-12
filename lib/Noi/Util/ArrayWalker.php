@@ -16,15 +16,7 @@ class ArrayWalker extends ArrayIterator
 
     public function __call($method, $args)
     {
-        $result = array();
-        foreach ($this as $key => &$element) {
-            if (is_object($element)) {
-                $result[$key] = call_user_func_array(array($element, $method), $args);
-            } else {
-                $result[$key] = call_user_func_array($method, array_merge(array(&$element), $args));
-            }
-        }
-        return $result;
+        return $this->createSelf($this->callEach($method, $args));
     }
 
     public function walk($callback)
@@ -34,12 +26,13 @@ class ArrayWalker extends ArrayIterator
 
     public function each($callback)
     {
-        return $this->walk($callback);
+        $this->walk($callback);
+        return $this;
     }
 
     public function map($callback)
     {
-        return array_map($callback, $this->getArrayCopy());
+        return $this->createSelf(array_map($callback, $this->getArrayCopy()));
     }
 
     public function apply($callback)
@@ -51,8 +44,33 @@ class ArrayWalker extends ArrayIterator
         return call_user_func_array($callback, array(&$this[$key], $key));
     }
 
-    public function __get($name)
+    public function __get($function)
     {
-        return new ArrayWalkerCallback($this, $name);
+        $walker = $this;
+        return new ArrayWalkerCallback(function ($offset, $args) use ($walker, $function) {
+            return $walker->createSelf($this->callEach($function, $args, $offset));
+        });
+    }
+
+    protected function callEach($callback, $args, $offset = 0)
+    {
+        $padded = array_pad($args, (0 < $offset) ? $offset - 1 : 0, null);
+        array_splice($padded, $offset, 0, array(null));  // insert place holder
+
+        $result = array();
+        foreach ($this as $key => &$element) {
+            if (is_object($element)) {
+                $result[$key] = call_user_func_array(array($element, $callback), $args);
+            } else {
+                $padded[$offset] = &$element;
+                $result[$key] = call_user_func_array($callback, $padded);
+            }
+        }
+        return $result;
+    }
+
+    protected function createSelf($traversable)
+    {
+        return new static($traversable);
     }
 }

@@ -8,29 +8,19 @@ use ArrayAccess;
  */
 class ArrayWalkerCallback implements ArrayAccess
 {
-    private $traversable;
     private $callback;
-    private $offset = 0;
+    private $offset;
 
-    public function __construct($traversable, $callback)
+    public function __construct($callback, $offset = 0)
     {
-        $this->traversable = $traversable;
         $this->callback = $callback;
+        $this->offset = $offset;
     }
 
     public function __invoke(/* $args */)
     {
         $args = func_get_args();
-        $padded = array_pad($args, (0 < $this->offset) ? $this->offset - 1 : 0, null);
-        array_splice($padded, $this->offset, 0, array(null));  // insert place holder
-
-        $result = array();
-		foreach ($this->traversable as $key => &$element) {
-            // function call
-            $padded[$this->offset] = &$element;
-            $result[$key] = call_user_func_array($this->callback, $padded);
-		}
-		return $result;
+        return call_user_func($this->callback, $this->offset, $args);
     }
 
     public function offsetGet($offset)
