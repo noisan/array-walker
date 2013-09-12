@@ -39,7 +39,7 @@ class ArrayWalker extends ArrayIterator
 
     public function map($callback)
     {
-        return array_map($callback, $this->getArrayCopy());
+        return $this->createSelf(array_map($callback, $this->getArrayCopy()));
     }
 
     public function apply($callback)
@@ -54,5 +54,10 @@ class ArrayWalker extends ArrayIterator
     public function __get($name)
     {
         return new ArrayWalkerCallback($this, $name);
+    }
+
+    protected function createSelf($traversable)
+    {
+        return new static($traversable);
     }
 }

@@ -31,6 +31,19 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         return $this->getMock('stdClass', array('__invoke'));
     }
 
+    protected function assertArrayWalkerEmpty($walker)
+    {
+        $this->assertInstanceOf('Noi\Util\ArrayWalker', $walker);
+        $this->assertEmpty($walker->getArrayCopy());
+        $this->assertInternalType('array', $walker->getArrayCopy());
+    }
+
+    protected function assertArrayWalkerEquals($expected, $walker)
+    {
+        $this->assertInstanceOf('Noi\Util\ArrayWalker', $walker);
+        $this->assertEquals($expected, $walker->getArrayCopy());
+    }
+
     /**
      * @test
      * ja: 空の配列に対して、__call()の実行は、空のリストを返す。
@@ -215,7 +228,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * ja: 保持している配列が空の場合、map()は、空の配列を返す。
+     * ja: 保持している配列が空の場合、map()は、空のArrayWalkerを返す。
      */
     public function map_ReturnsEmptyArray_forEmptyArray()
     {
@@ -227,13 +240,12 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         $result = $this->walker->map($this->unused);
 
         // Assert
-        $this->assertEmpty($result);
-        $this->assertInternalType('array', $result);
+        $this->assertArrayWalkerEmpty($result);
     }
 
     /**
      * @test
-     * ja: 保持している配列が空の場合、map()は、空の配列を返す。
+     * ja: 保持している配列が空の場合、map()は、コールバックを呼ばない。
      */
     public function map_DoesNotInvokeProvidedCallback_forEmptyArray()
     {
@@ -251,9 +263,10 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * ja: 要素を持つなら、map()は、与えられたコールバックを各要素に適用した結果の配列を返す。
+     * ja: 要素を持つなら、map()は、与えられたコールバックを各要素に適用して
+     *     結果の配列を新しいArrayWalkerとして返す。
      */
-    public function map_ReturnsArrayOfReturnedValues()
+    public function map_ReturnsArrayWalkerOfReturnedValues()
     {
         // Setup
         $testArray = array('*A*', '*B*', '*C*');
@@ -266,7 +279,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         });
 
         // Assert
-        $this->assertEquals($expected, $result);
+        $this->assertArrayWalkerEquals($expected, $result);
     }
 
     /**
