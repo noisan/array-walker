@@ -57,7 +57,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         $this->walker = $this->createArrayWalker($emptyArray);
 
         // Assert
-        $this->assertEmpty($this->walker->ignoredMethod());
+        $this->assertArrayWalkerEmpty($this->walker->ignoredMethod());
     }
 
     /**
@@ -98,7 +98,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         $result = $this->walker->trim('*');
 
         // Assert
-        $this->assertEquals($expected, $result);
+        $this->assertArrayWalkerEquals($expected, $result);
     }
 
     /**
@@ -121,7 +121,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         $result = $this->walker->trim('_');
 
         // Assert
-        $this->assertEquals($expected, $result);
+        $this->assertArrayWalkerEquals($expected, $result);
     }
 
     /**
@@ -406,7 +406,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         $result = $this->walker->trim('*');
 
         // Assert
-        $this->assertEquals($expected, $result);
+        $this->assertArrayWalkerEquals($expected, $result);
     }
 
     /**
@@ -433,8 +433,8 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         $result2 = $this->walker->preg_replace[2]('/_/', '*', 1);
 
         // Assert
-        $this->assertEquals($expected1, $result1);
-        $this->assertEquals($expected2, $result2);
+        $this->assertArrayWalkerEquals($expected1, $result1);
+        $this->assertArrayWalkerEquals($expected2, $result2);
     }
 
     /**
@@ -456,7 +456,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         $result = $this->walker->sprintf[3]($testFormat);
 
         // Assert
-        $this->assertEquals($expected, $result);
+        $this->assertArrayWalkerEquals($expected, $result);
     }
 
     /**
@@ -475,7 +475,7 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         $this->walker->array_push('TEST');
 
         // Assert
-        $this->assertEquals($expected, $this->walker->getArrayCopy());
+        $this->assertArrayWalkerEquals($expected, $this->walker);
     }
 
     /**
@@ -499,6 +499,6 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         $this->walker->mb_convert_variables[2]('UTF8', 'SJIS-win');
 
         // Assert
-        $this->assertEquals($expectedUTF8, $this->walker->getArrayCopy());
+        $this->assertArrayWalkerEquals($expectedUTF8, $this->walker);
     }
 }
