@@ -366,8 +366,8 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
     public function argumentPosition_EachElementIsPassedAsFirstArgument_Default()
     {
         // Setup
-        $testArray = array('*_scalar_*');
-        $expected = array('_scalar_');
+        $testArray = array('*_scalar_*', 'another' => '*test_value*');
+        $expected = array('_scalar_', 'another' => 'test_value');
         $this->walker = $this->createArrayWalker($testArray);
 
         // Act
@@ -387,9 +387,9 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
     public function argumentPosition_EachElementIsPassedAsSpecifiedOffsetArgument_OffsetSpecified()
     {
         // Setup
-        $testArray = array('_scalar_');
-        $expected1 = array('*scalar*');
-        $expected2 = array('*scalar_');
+        $testArray = array('_scalar_', 'another' => '_test_value_');
+        $expected1 = array('*scalar*', 'another' => '*test*value*');
+        $expected2 = array('*scalar_', 'another' => '*test_value_');
         $this->walker = $this->createArrayWalker($testArray);
 
         // Act
