@@ -428,4 +428,47 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         // Assert
         $this->assertEquals($expected, $result);
     }
+
+    /**
+     * @test
+     * ja: 非オブジェクトの要素に対して__call()で「関数」を呼ぶ時、
+     *     その関数は各要素の値に変更を加えることができる(引数位置指定なし)。
+     */
+    public function argumentPosition_CanChangeOriginalValue_Default()
+    {
+        // Setup
+        $testArray = array(array('a'), array('b'));
+        $expected = array(array('a', 'TEST'), array('b', 'TEST'));
+        $this->walker = $this->createArrayWalker($testArray);
+
+        // Act
+        $this->walker->array_push('TEST');
+
+        // Assert
+        $this->assertEquals($expected, $this->walker->getArrayCopy());
+    }
+
+    /**
+     * @test
+     * ja: 非オブジェクトの要素に対して__call()で「関数」を呼ぶ時、
+     *     その関数は各要素の値に変更を加えることができる(引数位置指定あり)。
+     */
+    public function argumentPosition_CanChangeOriginalValue_OffsetSpecified()
+    {
+        if (!function_exists('mb_convert_variables')) {
+            $this->markTestSkipped('This test requires the mb_convert_variables() function.');
+        }
+
+        // Setup
+        // full-width "A" and "B"
+        $testSJISArray = array("\x82\x60", "\x82\x61");
+        $expectedUTF8 = array("\xEF\xBC\xA1", "\xEF\xBC\xA2");
+        $this->walker = $this->createArrayWalker($testSJISArray);
+
+        // Act
+        $this->walker->mb_convert_variables[2]('UTF8', 'SJIS-win');
+
+        // Assert
+        $this->assertEquals($expectedUTF8, $this->walker->getArrayCopy());
+    }
 }
