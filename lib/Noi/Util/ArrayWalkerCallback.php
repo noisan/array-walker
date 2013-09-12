@@ -25,9 +25,9 @@ class ArrayWalkerCallback implements ArrayAccess
         array_splice($padded, $this->offset, 0, array(null));  // insert place holder
 
         $result = array();
-		foreach ($this->traversable as $element) {
+		foreach ($this->traversable as &$element) {
             // function call
-            $padded[$this->offset] = $element;
+            $padded[$this->offset] = &$element;
             $result[] = call_user_func_array($this->callback, $padded);
 		}
 		return $result;
