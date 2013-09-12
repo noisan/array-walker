@@ -501,4 +501,79 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         // Assert
         $this->assertArrayWalkerEquals($expectedUTF8, $this->walker);
     }
+
+    /**
+     * @test
+     * ja: __call()は、Fluent Interfaceでアクセス可能。
+     */
+    public function fluentInterface_Call()
+    {
+        // Setup
+        $testArray = array(' *a* ', ' *b* ', ' *c* ');
+        $expected = array('A', 'B', 'C');
+        $this->walker = $this->createArrayWalker($testArray);
+
+        // Act
+        $result = $this->walker
+                ->trim()
+                ->trim('*')
+                ->strtoupper();
+
+        // Assert
+        $this->assertArrayWalkerEquals($expected, $result);
+    }
+
+    /**
+     * @test
+     * ja: map()は、Fluent Interfaceでアクセス可能。
+     */
+    public function fluentInterface_Map()
+    {
+        // Setup
+        $testArray = array(' *a* ', ' *b* ', ' *c* ');
+        $expected = array('A', 'B', 'C');
+        $this->walker = $this->createArrayWalker($testArray);
+
+        // Act
+        $result = $this->walker
+                ->map('trim')
+                ->map(function ($entry) {
+                    return trim($entry, '*');
+                })
+                ->map(function ($entry) {
+                    return strtoupper($entry);
+                });
+
+        // Assert
+        $this->assertArrayWalkerEquals($expected, $result);
+    }
+
+    /**
+     * @test
+     * ja: each()は、Fluent Interfaceでアクセス可能。
+     */
+    public function fluentInterface_Each()
+    {
+        // Setup
+        $testArray = array(' *a* ', ' *b* ', ' *c* ');
+        $expected = array('A', 'B', 'C');
+        $this->walker = $this->createArrayWalker($testArray);
+
+        // Act
+        $result = $this->walker
+                ->each(function (&$entry) {
+                    $entry = trim($entry);
+                })
+                ->each(function (&$entry) {
+                    $entry = trim($entry, '*');
+                })
+                ->each(function (&$entry) {
+                    $entry = strtoupper($entry);
+                });
+
+        // Assert
+        $this->assertArrayWalkerEquals($expected, $result);
+        $this->assertArrayWalkerEquals($expected, $this->walker);
+        $this->assertSame($this->walker, $result);
+    }
 }
