@@ -16,7 +16,7 @@ class ArrayWalker extends ArrayIterator
 
     public function __call($method, $args)
     {
-        return $this->createSelf($this->callEach($method, $args));
+        return $this->callEach($method, $args, 0);
     }
 
     public function walk($callback)
@@ -48,25 +48,25 @@ class ArrayWalker extends ArrayIterator
     {
         $walker = $this;
         return new ArrayWalkerCallback(function ($offset, $args) use ($walker, $function) {
-            return $walker->createSelf($this->callEach($function, $args, $offset));
+            return $walker->callEach($function, $args, $offset);
         });
     }
 
-    protected function callEach($callback, $args, $offset = 0)
+    public function callEach($name, $args = array(), $offset = 0)
     {
-        $padded = array_pad($args, (0 < $offset) ? $offset - 1 : 0, null);
+        $padded = array_pad((array) $args, (0 < $offset) ? $offset - 1 : 0, null);
         array_splice($padded, $offset, 0, array(null));  // insert place holder
 
         $result = array();
         foreach ($this as $key => &$element) {
             if (is_object($element)) {
-                $result[$key] = call_user_func_array(array($element, $callback), $args);
+                $result[$key] = call_user_func_array(array($element, $name), $args);
             } else {
                 $padded[$offset] = &$element;
-                $result[$key] = call_user_func_array($callback, $padded);
+                $result[$key] = call_user_func_array($name, $padded);
             }
         }
-        return $result;
+        return $this->createSelf($result);
     }
 
     protected function createSelf($traversable)

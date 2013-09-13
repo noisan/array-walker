@@ -576,4 +576,53 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayWalkerEquals($expected, $this->walker);
         $this->assertSame($this->walker, $result);
     }
+
+    /**
+     * @test
+     * ja: callEach()は、3番目の引数を省略すると、__call()と同じ。
+     */
+    public function callEach_BehavesSameAsMagicCallMethod_Default()
+    {
+        // Test Empty Array
+        $this->assertArrayWalkerEmpty(
+                $this->createArrayWalker(array())->callEach('ignoredMethod'));
+
+        // Test Non-Object Element
+        $this->assertArrayWalkerEquals(
+                array('abc'),
+                $this->createArrayWalker(array('*abc*'))->callEach('trim', array('*')));
+
+        // Test Object Element
+        $args = array('test', 123, array(), (object) 'param4');
+
+        $this->mockObject->expects($this->once())
+                ->method('foo')->with($args[0], $args[1], $args[2], $this->identicalTo($args[3]));
+
+        $this->createArrayWalker(array($this->mockObject))->callEach('foo', $args);
+    }
+
+    /**
+     * @test
+     * ja: callEach()は、3番目の引数を指定すると、各要素を指定引数位置に割り当てる。
+     */
+    public function callEach_InsertsEachElementAtSpecifiedOffset_OffsetSpecified()
+    {
+        // Setup
+        $testArray = array(' *_scalar_* ', 'another' => ' *test_value* ');
+        $this->walker = $this->createArrayWalker($testArray);
+
+        // test offset zero
+        $this->assertArrayWalkerEquals(
+                array('*_scalar_*', 'another' => '*test_value*'),
+                $this->walker->callEach('trim', null, 0));
+
+        // test offset non-zero
+        $this->assertArrayWalkerEquals(
+                array(' **scalar** ', 'another' => ' *test*value* '),
+                $this->walker->callEach('str_replace', array('_', '*'), 2));
+
+        $this->assertArrayWalkerEquals(
+                array(' **scalar_* ', 'another' => ' *test*value* '),
+                $this->walker->callEach('preg_replace', array('/_/', '*', 1), 2));
+    }
 }
