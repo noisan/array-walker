@@ -625,4 +625,44 @@ class ArrayWalkerTest extends \PHPUnit_Framework_TestCase
                 array(' **scalar_* ', 'another' => ' *test*value* '),
                 $this->walker->callEach('preg_replace', array('/_/', '*', 1), 2));
     }
+
+    /**
+     * @test
+     * ja: コンストラクタに、非Traversableなオブジェクトを与えた場合、
+     *     そのオブジェクトを配列とみなして扱う。
+     */
+    public function constructor_NonTraversable()
+    {
+        // Setup
+        $testObject = new \stdClass();
+        $testObject->key1 = 'value1';
+        $testObject->key2 = 'value2';
+        $expected = array('key1' => 'value1', 'key2' => 'value2');
+
+        // Act
+        $walker = $this->createArrayWalker($testObject);
+
+        // Assert
+        $this->assertArrayWalkerEquals($expected, $walker);
+    }
+
+    /**
+     * @test
+     * ja: コンストラクタに、Traversableなオブジェクトを与えた場合、
+     *     そのオブジェクトが持つ要素をコピーして
+     */
+    public function constructor_Traversable()
+    {
+        // Setup
+        $testTraversable = new \AppendIterator();
+        $testTraversable->append(new \ArrayIterator(array(1, 2, 3)));
+        $testTraversable->append(new \ArrayIterator(array('first' => 'one', 'second' => 'two')));
+        $expected = array(1, 2, 3, 'first' => 'one', 'second' => 'two');
+
+        // Act
+        $walker = $this->createArrayWalker($testTraversable);
+
+        // Assert
+        $this->assertArrayWalkerEquals($expected, $walker);
+    }
 }
