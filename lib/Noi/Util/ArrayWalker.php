@@ -2,6 +2,7 @@
 namespace Noi\Util;
 
 use ArrayIterator;
+use Traversable;
 
 /**
  *
@@ -11,7 +12,11 @@ class ArrayWalker extends ArrayIterator
 {
     public function __construct($traversable)
     {
-        parent::__construct($traversable);
+        if ($traversable instanceof Traversable) {
+            parent::__construct(iterator_to_array($traversable));
+        } else {
+            parent::__construct((array) $traversable);
+        }
     }
 
     public function __call($method, $args)
