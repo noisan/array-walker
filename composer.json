@@ -3,7 +3,7 @@
     "description": "ArrayWalker, OOP wrapper for array_walk() and array_map()",
     "license": "MIT",
     "type": "library",
-    "keywords": ["array", "iterator", "walker"],
+    "keywords": ["array", "iterator", "walker", "wrapper", "oop"],
     "authors": [
         {
             "name": "Akihiro Yamanoi",
